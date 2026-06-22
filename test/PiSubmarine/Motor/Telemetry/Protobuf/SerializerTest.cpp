@@ -22,7 +22,9 @@ namespace PiSubmarine::Motor::Telemetry::Protobuf
             .ActiveFaults = static_cast<Api::Faults>(
                 static_cast<uint32_t>(Api::Faults::Overcurrent)
                 | static_cast<uint32_t>(Api::Faults::OpenLoad)),
-            .ActiveWarnings = Api::Warnings::Temperature};
+            .ActiveWarnings = Api::Warnings::Temperature,
+            .Direction = Api::DriveDirection::Forward,
+            .DriveEffort = NormalizedFraction{0.55}};
 
         EXPECT_CALL(providerMock, GetState())
             .WillOnce(testing::Return(Error::Api::Result<Api::State>(expectedState)));

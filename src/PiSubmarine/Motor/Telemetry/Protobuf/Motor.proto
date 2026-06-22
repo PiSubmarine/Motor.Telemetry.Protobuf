@@ -7,4 +7,6 @@ message State
   optional int32 operational = 1;
   optional uint32 active_faults = 2;
   optional uint32 active_warnings = 3;
+  optional int32 direction = 4;
+  optional double drive_effort = 5;
 }

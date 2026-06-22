@@ -25,6 +25,8 @@ namespace PiSubmarine::Motor::Telemetry::Protobuf
         protoState.set_operational(static_cast<int32_t>(stateResult->Operational));
         protoState.set_active_faults(static_cast<uint32_t>(stateResult->ActiveFaults));
         protoState.set_active_warnings(static_cast<uint32_t>(stateResult->ActiveWarnings));
+        protoState.set_direction(static_cast<int32_t>(stateResult->Direction));
+        protoState.set_drive_effort(static_cast<double>(stateResult->DriveEffort));
 
         std::string serialized;
         if (!protoState.SerializeToString(&serialized))

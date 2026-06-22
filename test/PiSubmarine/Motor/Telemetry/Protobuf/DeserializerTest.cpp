@@ -39,4 +39,40 @@ namespace PiSubmarine::Motor::Telemetry::Protobuf
         ASSERT_FALSE(result.has_value());
         EXPECT_EQ(result.error().Cause, make_error_code(ErrorCode::InvalidPayload));
     }
+
+    TEST(DeserializerTest, RejectsInvalidDriveDirection)
+    {
+        ::PiSubmarine::Telemetry::Api::IRawSourceMock rawSourceMock;
+        const std::vector<std::byte> payload{
+            std::byte{0x08}, std::byte{0x00},
+            std::byte{0x20}, std::byte{0x07}};
+
+        EXPECT_CALL(rawSourceMock, GetRaw())
+            .WillOnce(testing::Return(Error::Api::Result<std::vector<std::byte>>(payload)));
+
+        Deserializer deserializer(rawSourceMock);
+        const auto result = deserializer.GetState();
+
+        ASSERT_FALSE(result.has_value());
+        EXPECT_EQ(result.error().Cause, make_error_code(ErrorCode::InvalidPayload));
+    }
+
+    TEST(DeserializerTest, RejectsInvalidDriveEffort)
+    {
+        ::PiSubmarine::Telemetry::Api::IRawSourceMock rawSourceMock;
+        const std::vector<std::byte> payload{
+            std::byte{0x08}, std::byte{0x00},
+            std::byte{0x29},
+            std::byte{0x00}, std::byte{0x00}, std::byte{0x00}, std::byte{0x00},
+            std::byte{0x00}, std::byte{0x00}, std::byte{0xF8}, std::byte{0x3F}};
+
+        EXPECT_CALL(rawSourceMock, GetRaw())
+            .WillOnce(testing::Return(Error::Api::Result<std::vector<std::byte>>(payload)));
+
+        Deserializer deserializer(rawSourceMock);
+        const auto result = deserializer.GetState();
+
+        ASSERT_FALSE(result.has_value());
+        EXPECT_EQ(result.error().Cause, make_error_code(ErrorCode::InvalidPayload));
+    }
 }

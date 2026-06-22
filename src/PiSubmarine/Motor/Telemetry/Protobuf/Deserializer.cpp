@@ -31,6 +31,21 @@ namespace PiSubmarine::Motor::Telemetry::Protobuf
                     return std::nullopt;
             }
         }
+
+        [[nodiscard]] std::optional<Api::DriveDirection> ParseDriveDirection(const int32_t value)
+        {
+            switch (value)
+            {
+                case -1:
+                    return Api::DriveDirection::Reverse;
+                case 0:
+                    return Api::DriveDirection::Idle;
+                case 1:
+                    return Api::DriveDirection::Forward;
+                default:
+                    return std::nullopt;
+            }
+        }
     }
 
     Deserializer::Deserializer(const ::PiSubmarine::Telemetry::Api::IRawSource& rawSource)
@@ -66,6 +81,33 @@ namespace PiSubmarine::Motor::Telemetry::Protobuf
             .Operational = *operational,
             .ActiveFaults = static_cast<Api::Faults>(protoState.active_faults()),
             .ActiveWarnings = static_cast<Api::Warnings>(protoState.active_warnings())};
+
+        if (protoState.has_direction())
+        {
+            const auto direction = ParseDriveDirection(protoState.direction());
+            if (!direction.has_value())
+            {
+                return std::unexpected(MakeMotorTelemetryError(
+                    Error::Api::ErrorCondition::ContractError,
+                    ErrorCode::InvalidPayload));
+            }
+
+            state.Direction = *direction;
+        }
+
+        if (protoState.has_drive_effort())
+        {
+            try
+            {
+                state.DriveEffort = NormalizedFraction{protoState.drive_effort()};
+            }
+            catch (...)
+            {
+                return std::unexpected(MakeMotorTelemetryError(
+                    Error::Api::ErrorCondition::ContractError,
+                    ErrorCode::InvalidPayload));
+            }
+        }
 
         return state;
     }
